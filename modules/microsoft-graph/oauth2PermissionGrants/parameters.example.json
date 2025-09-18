@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clientId": {
+      "value": "12345678-1234-1234-1234-123456789012"
+    },
+    "consentType": {
+      "value": "AllPrincipals"
+    },
+    "resourceId": {
+      "value": "87654321-4321-4321-4321-210987654321"
+    },
+    "scope": {
+      "value": "User.Read Directory.Read.All"
+    }
+  }
+}

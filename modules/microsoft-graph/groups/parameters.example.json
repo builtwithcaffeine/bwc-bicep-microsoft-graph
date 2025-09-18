@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "displayName": {
+      "value": "My Sample Security Group"
+    },
+    "mailNickname": {
+      "value": "mysamplegroup"
+    },
+    "groupDescription": {
+      "value": "A sample security group created using the Microsoft Graph Bicep module"
+    },
+    "securityEnabled": {
+      "value": true
+    },
+    "mailEnabled": {
+      "value": false
+    },
+    "visibility": {
+      "value": "Private"
+    }
+  }
+}
