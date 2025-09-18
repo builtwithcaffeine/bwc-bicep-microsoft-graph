@@ -97,9 +97,6 @@ param servicePrincipalNames array = []
 @description('Optional. Token encryption key ID')
 param tokenEncryptionKeyId string = ''
 
-@description('Optional. Verified publisher information')
-param verifiedPublisher object = {}
-
 // ========== VARIABLES ==========
 
 // Configure owners relationship if provided
@@ -144,7 +141,6 @@ resource servicePrincipal 'Microsoft.Graph/servicePrincipals@v1.0' = {
   servicePrincipalType: servicePrincipalType
   tags: tags
   tokenEncryptionKeyId: !empty(tokenEncryptionKeyId) ? tokenEncryptionKeyId : null
-  verifiedPublisher: !empty(verifiedPublisher) ? verifiedPublisher : null
 }
 
 // ========== OUTPUTS ==========
