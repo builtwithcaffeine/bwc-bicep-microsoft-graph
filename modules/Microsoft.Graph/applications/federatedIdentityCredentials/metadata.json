@@ -1,0 +1,15 @@
+{
+  "$schema": "https://github.com/Azure/Verified-Modules/schemas/avmMetadata.json",
+  "type": "module",
+  "version": "1.0.0",
+  "avm": {
+    "type": "Bicep",
+    "specVersion": "1.0"
+  },
+  "metadata": {
+    "name": "Federated Identity Credentials",
+    "description": "AVM module for Microsoft Graph federatedIdentityCredentials resource.",
+    "owner": "user",
+    "documentationUrl": "https://learn.microsoft.com/en-us/graph/templates/bicep/reference/federatedidentitycredentials?view=graph-bicep-1.0"
+  }
+}
