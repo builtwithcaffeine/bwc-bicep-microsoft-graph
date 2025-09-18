@@ -1,0 +1,1 @@
+# bwc-bicep-microsoft-graph
