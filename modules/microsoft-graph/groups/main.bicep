@@ -75,13 +75,13 @@ param memberIds array = []
 // Configure owners relationship if provided
 var ownersConfig = !empty(ownerIds) ? {
   relationships: ownerIds
-  relationshipSemantics: 'replace'
+  relationshipSemantics: 'append'
 } : null
 
 // Configure members relationship if provided
 var membersConfig = !empty(memberIds) ? {
   relationships: memberIds
-  relationshipSemantics: 'replace'
+  relationshipSemantics: 'append'
 } : null
 
 // ========== RESOURCES ==========

@@ -153,7 +153,7 @@ param redirectUriSettings array = []
 // Configure owners relationship if provided
 var ownersConfig = !empty(ownerIds) ? {
   relationships: ownerIds
-  relationshipSemantics: 'replace'
+  relationshipSemantics: 'append'
 } : null
 
 // Web configuration

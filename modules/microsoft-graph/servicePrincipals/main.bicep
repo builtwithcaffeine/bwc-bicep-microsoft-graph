@@ -13,9 +13,6 @@ param appId string
 @description('Optional. Display name for the service principal')
 param displayName string = ''
 
-@description('Optional. Description of the service principal')
-param servicePrincipalDescription string = ''
-
 @description('Optional. Whether the service principal account is enabled')
 param accountEnabled bool = true
 
@@ -73,11 +70,7 @@ param info object = {}
 @description('Optional. Add-ins for the service principal')
 param addIns array = []
 
-@description('Optional. Application description')
-param appDescription string = ''
-
-@description('Optional. Application display name')
-param appDisplayName string = ''
+// Note: appDescription and appDisplayName are read-only properties and should not be included
 
 @description('Optional. Custom security attributes')
 param customSecurityAttributes object = {}
@@ -91,8 +84,7 @@ param preferredTokenSigningKeyThumbprint string = ''
 @description('Optional. SAML single sign-on settings')
 param samlSingleSignOnSettings object = {}
 
-@description('Optional. Service principal names')
-param servicePrincipalNames array = []
+// Note: Some properties like servicePrincipalNames may be read-only and auto-generated
 
 @description('Optional. Token encryption key ID')
 param tokenEncryptionKeyId string = ''
@@ -102,7 +94,7 @@ param tokenEncryptionKeyId string = ''
 // Configure owners relationship if provided
 var ownersConfig = !empty(ownerIds) ? {
   relationships: ownerIds
-  relationshipSemantics: 'replace'
+  relationshipSemantics: 'append'
 } : null
 
 // ========== RESOURCES ==========
@@ -113,12 +105,9 @@ extension microsoftGraphV1
 resource servicePrincipal 'Microsoft.Graph/servicePrincipals@v1.0' = {
   appId: appId
   displayName: !empty(displayName) ? displayName : null
-  description: !empty(servicePrincipalDescription) ? servicePrincipalDescription : null
   accountEnabled: accountEnabled
   addIns: addIns
   alternativeNames: alternativeNames
-  appDescription: !empty(appDescription) ? appDescription : null
-  appDisplayName: !empty(appDisplayName) ? appDisplayName : null
   appRoleAssignmentRequired: appRoleAssignmentRequired
   appRoles: appRoles
   customSecurityAttributes: !empty(customSecurityAttributes) ? customSecurityAttributes : null
@@ -137,7 +126,6 @@ resource servicePrincipal 'Microsoft.Graph/servicePrincipals@v1.0' = {
   preferredTokenSigningKeyThumbprint: !empty(preferredTokenSigningKeyThumbprint) ? preferredTokenSigningKeyThumbprint : null
   replyUrls: replyUrls
   samlSingleSignOnSettings: !empty(samlSingleSignOnSettings) ? samlSingleSignOnSettings : null
-  servicePrincipalNames: servicePrincipalNames
   servicePrincipalType: servicePrincipalType
   tags: tags
   tokenEncryptionKeyId: !empty(tokenEncryptionKeyId) ? tokenEncryptionKeyId : null
@@ -165,12 +153,6 @@ output servicePrincipalType string = servicePrincipal.servicePrincipalType
 
 @description('Whether app role assignment is required')
 output appRoleAssignmentRequired bool = servicePrincipal.appRoleAssignmentRequired
-
-@description('The application description')
-output appDescription string = servicePrincipal.appDescription != null ? servicePrincipal.appDescription : ''
-
-@description('The application display name')
-output appDisplayName string = servicePrincipal.appDisplayName != null ? servicePrincipal.appDisplayName : ''
 
 @description('The service principal names')
 output servicePrincipalNames array = servicePrincipal.servicePrincipalNames
