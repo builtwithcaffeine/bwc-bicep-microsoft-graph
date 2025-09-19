@@ -7,7 +7,7 @@ metadata owner = 'Platform Team'
 
 // ========== PARAMETERS ==========
 
-@description('Required. The application ID (object ID) of the parent application')
+@description('Required. The application unique name (from Microsoft Graph applications module)')
 param applicationId string
 
 @description('Required. Name of the federated identity credential')
@@ -52,7 +52,7 @@ extension microsoftGraphV1
 
 @description('Microsoft Graph Federated Identity Credential')
 resource federatedIdentityCredential 'Microsoft.Graph/applications/federatedIdentityCredentials@v1.0' = {
-  name: '${applicationId}/federatedIdentityCredentials/${name}'
+  name: '${applicationId}/${name}'
   audiences: validatedAudiences
   description: !empty(credentialDescription) ? credentialDescription : null
   issuer: issuer

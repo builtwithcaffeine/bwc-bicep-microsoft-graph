@@ -1,5 +1,5 @@
 # Microsoft Graph Federated Identity Credentials Deployment Script
-# This script demonstrates how to deploy the module and create actual Azure AD resources
+# This script deploys the module which automatically creates Azure AD applications and federated credentials
 
 param(
     [Parameter(Mandatory = $true)]
@@ -24,10 +24,7 @@ param(
     [string]$AzdoOrganization = "myorg",
     
     [Parameter(Mandatory = $false)]
-    [string]$AzdoProject = "myproject",
-    
-    [Parameter(Mandatory = $false)]
-    [switch]$CreateResources = $false
+    [string]$AzdoProject = "myproject"
 )
 
 # Set the Azure subscription context
@@ -38,9 +35,9 @@ az account set --subscription $SubscriptionId
 Write-Host "Ensuring resource group exists..." -ForegroundColor Green
 az group create --name $ResourceGroupName --location $Location
 
-# Deploy the configuration template
-Write-Host "Deploying federated identity credential configurations..." -ForegroundColor Green
-$deploymentName = "federated-identity-config-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+# Deploy the federated identity credentials (this creates actual Azure AD resources)
+Write-Host "Deploying federated identity credentials..." -ForegroundColor Green
+$deploymentName = "federated-identity-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
 
 $deploymentResult = az deployment group create `
     --resource-group $ResourceGroupName `
@@ -50,102 +47,77 @@ $deploymentResult = az deployment group create `
     --output json | ConvertFrom-Json
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Configuration deployment failed. Please check the error messages above."
+    Write-Error "Deployment failed. Please check the error messages above."
     exit 1
 }
 
-Write-Host "Configuration deployment completed successfully!" -ForegroundColor Green
+Write-Host "Deployment completed successfully!" -ForegroundColor Green
 
 # Get deployment outputs
-Write-Host "Retrieving deployment configurations..." -ForegroundColor Green
+Write-Host "Retrieving deployment results..." -ForegroundColor Green
 $outputs = $deploymentResult.properties.outputs
 
-# Create output directory for JSON files
-$outputDir = "./federated-credentials-output"
+Write-Host "`n=== Created Resources ===" -ForegroundColor Yellow
+
+# Display GitHub Main Branch configuration
+$githubMain = $outputs.githubMainBranchConfig.value
+Write-Host "`n--- GitHub Main Branch ---" -ForegroundColor Cyan
+Write-Host "Application ID: $($githubMain.applicationId)" -ForegroundColor White
+Write-Host "Credential Resource ID: $($githubMain.credentialResourceId)" -ForegroundColor White
+Write-Host "Credential Name: $($githubMain.credentialName)" -ForegroundColor White
+Write-Host "Issuer: $($githubMain.issuer)" -ForegroundColor White
+Write-Host "Subject: $($githubMain.subject)" -ForegroundColor White
+
+# Display GitHub Pull Requests configuration
+$githubPR = $outputs.githubPullRequestsConfig.value
+Write-Host "`n--- GitHub Pull Requests ---" -ForegroundColor Cyan
+Write-Host "Application ID: $($githubPR.applicationId)" -ForegroundColor White
+Write-Host "Credential Resource ID: $($githubPR.credentialResourceId)" -ForegroundColor White
+Write-Host "Credential Name: $($githubPR.credentialName)" -ForegroundColor White
+Write-Host "Issuer: $($githubPR.issuer)" -ForegroundColor White
+Write-Host "Subject: $($githubPR.subject)" -ForegroundColor White
+
+# Display GitHub Environment configuration
+$githubEnv = $outputs.githubEnvironmentConfig.value
+Write-Host "`n--- GitHub Environment ---" -ForegroundColor Cyan
+Write-Host "Application ID: $($githubEnv.applicationId)" -ForegroundColor White
+Write-Host "Credential Resource ID: $($githubEnv.credentialResourceId)" -ForegroundColor White
+Write-Host "Credential Name: $($githubEnv.credentialName)" -ForegroundColor White
+Write-Host "Issuer: $($githubEnv.issuer)" -ForegroundColor White
+Write-Host "Subject: $($githubEnv.subject)" -ForegroundColor White
+
+# Display Azure DevOps configuration
+$azdo = $outputs.azureDevOpsConfig.value
+Write-Host "`n--- Azure DevOps ---" -ForegroundColor Cyan
+Write-Host "Application ID: $($azdo.applicationId)" -ForegroundColor White
+Write-Host "Credential Resource ID: $($azdo.credentialResourceId)" -ForegroundColor White
+Write-Host "Credential Name: $($azdo.credentialName)" -ForegroundColor White
+Write-Host "Issuer: $($azdo.issuer)" -ForegroundColor White
+Write-Host "Subject: $($azdo.subject)" -ForegroundColor White
+
+# Create summary output file
+$outputDir = "./deployment-output"
 if (!(Test-Path $outputDir)) {
     New-Item -ItemType Directory -Path $outputDir | Out-Null
 }
 
-Write-Host "Generated Configurations:" -ForegroundColor Yellow
-
-# Process each configuration
-$configurations = @{
-    "GitHub Main Branch" = $outputs.githubMainBranchConfig.value
-    "GitHub Pull Requests" = $outputs.githubPullRequestsConfig.value  
-    "GitHub Environment" = $outputs.githubEnvironmentConfig.value
-    "Azure DevOps" = $outputs.azureDevOpsConfig.value
-    "Google Cloud" = $outputs.googleCloudConfig.value
-}
-
-foreach ($configName in $configurations.Keys) {
-    $config = $configurations[$configName]
-    
-    Write-Host "`n--- $configName ---" -ForegroundColor Cyan
-    Write-Host "Application: $($config.configuration.application.displayName)" -ForegroundColor White
-    Write-Host "Credential: $($config.configuration.federatedCredential.name)" -ForegroundColor White
-    Write-Host "Issuer: $($config.configuration.federatedCredential.issuer)" -ForegroundColor White
-    Write-Host "Subject: $($config.configuration.federatedCredential.subject)" -ForegroundColor White
-    
-    # Save JSON configuration to file
-    $jsonFileName = "$($configName -replace ' ', '-').json"
-    $jsonFilePath = Join-Path $outputDir $jsonFileName
-    $config.federatedCredentialJson | ConvertTo-Json -Depth 10 | Out-File -FilePath $jsonFilePath -Encoding UTF8
-    Write-Host "JSON Config saved to: $jsonFilePath" -ForegroundColor Gray
-    
-    if ($CreateResources) {
-        Write-Host "Creating Azure AD resources for $configName..." -ForegroundColor Yellow
-        
-        # Create the application
-        $appDisplayName = $config.configuration.application.displayName
-        $signInAudience = $config.configuration.application.signInAudience
-        
-        try {
-            # Check if application already exists
-            $existingApp = az ad app list --display-name $appDisplayName --query "[0]" | ConvertFrom-Json
-            
-            if ($existingApp) {
-                Write-Host "Application '$appDisplayName' already exists (App ID: $($existingApp.appId))" -ForegroundColor Yellow
-                $appId = $existingApp.appId
-            } else {
-                Write-Host "Creating application '$appDisplayName'..." -ForegroundColor Green
-                $newApp = az ad app create --display-name $appDisplayName --sign-in-audience $signInAudience | ConvertFrom-Json
-                $appId = $newApp.appId
-                Write-Host "Created application with App ID: $appId" -ForegroundColor Green
-            }
-            
-            # Create federated credential
-            $credentialName = $config.configuration.federatedCredential.name
-            Write-Host "Creating federated credential '$credentialName'..." -ForegroundColor Green
-            
-            az ad app federated-credential create --id $appId --parameters $jsonFilePath
-            
-            if ($LASTEXITCODE -eq 0) {
-                Write-Host "Successfully created federated credential for $configName" -ForegroundColor Green
-            } else {
-                Write-Warning "Failed to create federated credential for $configName"
-            }
-            
-        } catch {
-            Write-Warning "Error creating resources for $configName`: $($_.Exception.Message)"
-        }
-    }
-}
+$summaryFile = Join-Path $outputDir "deployment-summary.json"
+$outputs | ConvertTo-Json -Depth 10 | Out-File -FilePath $summaryFile -Encoding UTF8
+Write-Host "`nDeployment summary saved to: $summaryFile" -ForegroundColor Gray
 
 Write-Host "`n=== Deployment Summary ===" -ForegroundColor Yellow
-Write-Host "Environment: $EnvironmentName" -ForegroundColor White
-Write-Host "Organization: $OrganizationName" -ForegroundColor White
-Write-Host "Repository: $RepositoryName" -ForegroundColor White
-Write-Host "Configuration files saved to: $outputDir" -ForegroundColor White
-
-if (!$CreateResources) {
-    Write-Host "`nTo create the actual Azure AD resources, run this script again with the -CreateResources switch" -ForegroundColor Cyan
-    Write-Host "Or use the Azure CLI commands provided in the outputs" -ForegroundColor Cyan
-}
+$summary = $outputs.deploymentSummary.value
+Write-Host "Environment: $($summary.environmentName)" -ForegroundColor White
+Write-Host "Organization: $($summary.organizationName)" -ForegroundColor White
+Write-Host "Repository: $($summary.repositoryName)" -ForegroundColor White
+Write-Host "Total Applications Created: $($summary.totalApplicationsCreated)" -ForegroundColor White
+Write-Host "Total Credentials Created: $($summary.totalCredentialsCreated)" -ForegroundColor White
 
 Write-Host "`n=== Next Steps ===" -ForegroundColor Yellow
-Write-Host "1. Review the generated JSON configuration files in $outputDir" -ForegroundColor White
-Write-Host "2. If you didn't use -CreateResources, manually create the applications using Azure CLI or PowerShell" -ForegroundColor White
-Write-Host "3. Configure your CI/CD pipelines to use the created application IDs" -ForegroundColor White
+Write-Host "1. Note the Application IDs above for use in your CI/CD pipelines" -ForegroundColor White
+Write-Host "2. Configure your GitHub repository secrets with the Application IDs" -ForegroundColor White
+Write-Host "3. Set up Azure DevOps service connections using the Application IDs" -ForegroundColor White
 Write-Host "4. Test the OIDC authentication from your external systems" -ForegroundColor White
+Write-Host "5. Assign appropriate Azure RBAC roles to the created applications" -ForegroundColor White
 
-Write-Host "`nScript completed!" -ForegroundColor Green
+Write-Host "`nScript completed successfully!" -ForegroundColor Green

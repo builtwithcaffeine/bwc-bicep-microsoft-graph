@@ -1,5 +1,5 @@
 // Test deployment for Microsoft Graph Groups Module
-// This file demonstrates how to use the module in different scenarios
+// This file demonstrates basic group scenarios for testing
 
 targetScope = 'resourceGroup'
 
@@ -8,104 +8,47 @@ targetScope = 'resourceGroup'
 @description('Environment name (dev, test, prod)')
 param environmentName string = 'dev'
 
-@description('Group name prefix')
-param groupNamePrefix string = 'contoso'
+@description('Organization name prefix for group naming')
+param organizationPrefix string = 'contoso'
+
+@description('Owner user object IDs for group management')
+param ownerUserIds array = []
+
+@description('Test user object IDs for group membership')
+param testUserIds array = []
 
 // ========== VARIABLES ==========
 
-var commonOwners = [
-  // Add owner object IDs here if needed
-]
+var environmentSuffix = toUpper(environmentName)
 
-// ========== MODULE DEPLOYMENTS ==========
+// ========== TEST SCENARIO 1: Basic Security Group ==========
 
-// Example 1: Basic Security Group
-module securityGroup '../main.bicep' = {
-  name: 'security-group-deployment'
+@description('Basic security group for access control')
+module basicSecurityGroup '../main.bicep' = {
+  name: 'test-basic-security-group'
   params: {
-    displayName: '${groupNamePrefix}-security-${environmentName}'
-    mailNickname: '${groupNamePrefix}security${environmentName}'
-    groupDescription: 'Security group for ${environmentName} environment'
+    displayName: '${organizationPrefix} IT Team - ${environmentSuffix}'
+    groupName: '${organizationPrefix}itteam${environmentName}'
+    mailNickname: '${organizationPrefix}itteam${environmentName}'
+    groupDescription: 'Basic security group for IT team access control in ${environmentName} environment'
     securityEnabled: true
     mailEnabled: false
     visibility: 'Private'
-    ownerIds: commonOwners
-  }
-}
-
-// Example 2: Microsoft 365 Group
-module m365Group '../main.bicep' = {
-  name: 'm365-group-deployment'
-  params: {
-    displayName: '${groupNamePrefix} Team - ${environmentName}'
-    mailNickname: '${groupNamePrefix}team${environmentName}'
-    groupDescription: 'Microsoft 365 group for ${environmentName} team collaboration'
-    mailEnabled: true
-    securityEnabled: true
-    groupTypes: ['Unified']
-    visibility: 'Public'
-    ownerIds: commonOwners
-  }
-}
-
-// Example 3: Role-Assignable Group
-module roleGroup '../main.bicep' = {
-  name: 'role-group-deployment'
-  params: {
-    displayName: '${groupNamePrefix}-admins-${environmentName}'
-    mailNickname: '${groupNamePrefix}admins${environmentName}'
-    groupDescription: 'Role-assignable group for ${environmentName} administrators'
-    securityEnabled: true
-    mailEnabled: false
-    isAssignableToRole: true
-    visibility: 'Private'
-    ownerIds: commonOwners
-  }
-}
-
-// Example 4: Dynamic Security Group
-module dynamicGroup '../main.bicep' = {
-  name: 'dynamic-group-deployment'
-  params: {
-    displayName: '${groupNamePrefix}-engineers-${environmentName}'
-    mailNickname: '${groupNamePrefix}engineers${environmentName}'
-    groupDescription: 'Dynamic group for engineers in ${environmentName} environment'
-    securityEnabled: true
-    mailEnabled: false
-    groupTypes: ['DynamicMembership']
-    membershipRule: 'user.department -eq "Engineering" and user.companyName -eq "${groupNamePrefix}"'
-    membershipRuleProcessingState: 'On'
-    visibility: 'Private'
-    ownerIds: commonOwners
+    classification: environmentName == 'prod' ? 'High' : 'Medium'
+    
+    ownerIds: ownerUserIds
+    memberIds: testUserIds
   }
 }
 
 // ========== OUTPUTS ==========
 
-@description('Security Group Information')
-output securityGroup object = {
-  resourceId: securityGroup.outputs.resourceId
-  groupId: securityGroup.outputs.groupId
-  displayName: securityGroup.outputs.displayName
-}
-
-@description('Microsoft 365 Group Information')
-output m365Group object = {
-  resourceId: m365Group.outputs.resourceId
-  groupId: m365Group.outputs.groupId
-  displayName: m365Group.outputs.displayName
-}
-
-@description('Role-Assignable Group Information')
-output roleGroup object = {
-  resourceId: roleGroup.outputs.resourceId
-  groupId: roleGroup.outputs.groupId
-  displayName: roleGroup.outputs.displayName
-}
-
-@description('Dynamic Group Information')
-output dynamicGroup object = {
-  resourceId: dynamicGroup.outputs.resourceId
-  groupId: dynamicGroup.outputs.groupId
-  displayName: dynamicGroup.outputs.displayName
+@description('Basic Security Group Information')
+output basicSecurityGroup object = {
+  resourceId: basicSecurityGroup.outputs.resourceId
+  groupId: basicSecurityGroup.outputs.groupId
+  displayName: basicSecurityGroup.outputs.displayName
+  mailNickname: basicSecurityGroup.outputs.mailNickname
+  visibility: basicSecurityGroup.outputs.visibility
+  securityEnabled: basicSecurityGroup.outputs.securityEnabled
 }

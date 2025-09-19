@@ -279,3 +279,9 @@ output publicClientConfiguration object = application.publicClient != null ? app
 
 @description('API configuration including OAuth2 permissions and pre-authorized apps')
 output apiConfiguration object = application.api != null ? application.api : {}
+
+@description('Application password credentials configuration')
+output applicationCredentials array = application.passwordCredentials
+
+@description('Number of password credentials configured')
+output credentialCount int = length(application.passwordCredentials)
