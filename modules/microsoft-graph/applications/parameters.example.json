@@ -1,0 +1,84 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "displayName": {
+      "value": "My Sample Application"
+    },
+    "appName": {
+      "value": "my-sample-app"
+    },
+    "appDescription": {
+      "value": "A comprehensive sample application created using the Microsoft Graph Bicep module"
+    },
+    "signInAudience": {
+      "value": "AzureADMyOrg"
+    },
+    "webRedirectUris": {
+      "value": [
+        "https://myapp.azurewebsites.net/signin-oidc",
+        "https://localhost:5001/signin-oidc"
+      ]
+    },
+    "spaRedirectUris": {
+      "value": [
+        "https://myapp.azurewebsites.net/callback",
+        "http://localhost:3000/callback"
+      ]
+    },
+    "homePageUrl": {
+      "value": "https://myapp.azurewebsites.net"
+    },
+    "logoutUrl": {
+      "value": "https://myapp.azurewebsites.net/signout-oidc"
+    },
+    "identifierUris": {
+      "value": [
+        "api://my-sample-app"
+      ]
+    },
+    "enableIdTokenIssuance": {
+      "value": true
+    },
+    "requestedAccessTokenVersion": {
+      "value": 2
+    },
+    "requiredResourceAccess": {
+      "value": [
+        {
+          "resourceAppId": "00000003-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
+              "type": "Scope"
+            }
+          ]
+        }
+      ]
+    },
+    "authenticationBehaviors": {
+      "value": {
+        "removeUnverifiedEmailClaim": true,
+        "requireClientServicePrincipal": false
+      }
+    },
+    "applicationInfo": {
+      "value": {
+        "marketingUrl": "https://mycompany.com/products/myapp",
+        "privacyStatementUrl": "https://mycompany.com/privacy",
+        "supportUrl": "https://mycompany.com/support",
+        "termsOfServiceUrl": "https://mycompany.com/terms"
+      }
+    },
+    "tags": {
+      "value": [
+        "webapp",
+        "sample",
+        "production"
+      ]
+    },
+    "notes": {
+      "value": "Sample application demonstrating comprehensive Microsoft Graph Bicep configuration"
+    }
+  }
+}

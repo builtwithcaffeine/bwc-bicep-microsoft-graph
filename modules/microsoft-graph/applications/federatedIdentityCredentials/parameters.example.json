@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "parentApplicationDisplayName": {
+      "value": "MyApp - GitHub Actions OIDC"
+    },
+    "parentApplicationUniqueName": {
+      "value": "myapp-github-oidc"
+    },
+    "credentialName": {
+      "value": "github-main-branch"
+    },
+    "issuer": {
+      "value": "https://token.actions.githubusercontent.com"
+    },
+    "subject": {
+      "value": "repo:myorg/myrepo:ref:refs/heads/main"
+    },
+    "audiences": {
+      "value": [
+        "api://AzureADTokenExchange"
+      ]
+    },
+    "credentialDescription": {
+      "value": "GitHub Actions OIDC authentication for main branch deployments"
+    },
+    "signInAudience": {
+      "value": "AzureADMyOrg"
+    },
+    "parentApplicationDescription": {
+      "value": "Application for GitHub Actions OIDC authentication"
+    },
+    "environmentName": {
+      "value": "prod"
+    },
+    "tags": {
+      "value": [
+        "github-actions",
+        "oidc",
+        "ci-cd"
+      ]
+    }
+  }
+}
